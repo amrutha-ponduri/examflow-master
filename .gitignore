@@ -1,0 +1,67 @@
+examcell-backend/src/main/resources/application-local.properties
+# Logs
+examflow-master/logs
+examflow-master/*.log
+examflow-master/npm-debug.log*
+examflow-master/yarn-debug.log*
+examflow-master/yarn-error.log*
+examflow-master/pnpm-debug.log*
+examflow-master/lerna-debug.log*
+
+# Dependencies & builds
+examflow-master/node_modules/
+examflow-master/dist/
+examflow-master/dist-ssr/
+examflow-master/*.local
+
+# Editor directories and files
+examflow-master/.vscode/*
+!examflow-master/.vscode/extensions.json
+examflow-master/.idea/
+examflow-master/.DS_Store
+examflow-master/*.suo
+examflow-master/*.ntvs*
+examflow-master/*.njsproj
+examflow-master/*.sln
+examflow-master/*.sw?
+
+# Examcell Backend
+
+# Help files
+examcell-backend/HELP.md
+
+# Maven / build
+examcell-backend/target/
+examcell-backend/.mvn/wrapper/maven-wrapper.jar
+# Keep target folders in source directories
+!examcell-backend/**/src/main/**/target/
+!examcell-backend/**/src/test/**/target/
+
+# Spring Tool Suite (STS)
+examcell-backend/.apt_generated
+examcell-backend/.classpath
+examcell-backend/.factorypath
+examcell-backend/.project
+examcell-backend/.settings
+examcell-backend/.springBeans
+examcell-backend/.sts4-cache
+
+# IntelliJ IDEA
+examcell-backend/.idea
+examcell-backend/*.iws
+examcell-backend/*.iml
+examcell-backend/*.ipr
+
+# NetBeans
+examcell-backend/nbproject/private/
+examcell-backend/nbbuild/
+examcell-backend/dist/
+examcell-backend/nbdist/
+examcell-backend/.nb-gradle/
+examcell-backend/build/
+# Keep build folders in source directories
+!examcell-backend/**/src/main/**/build/
+!examcell-backend/**/src/test/**/build/
+
+# VS Code
+examcell-backend/.vscode/
