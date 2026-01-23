@@ -1,6 +1,5 @@
 package com.example.examcell.model;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -15,19 +14,21 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "question")
 public class Question {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private int marks;
-    @Column(name = "courseoutcome")
-    private int courseOutcome;
-    @ManyToOne
-    @JoinColumn(name = "coursecode")
-    @JsonIgnoreProperties("questions")
-    private Course course;
 
+    // Foreign key
+    @ManyToOne
+    @JoinColumn(name = "module_id")
+    private Module module;
+    @ManyToOne
+    @JoinColumn(name = "questionbank_id")
+    @JsonIgnoreProperties("questions")
+    private QuestionBank questionBank;
+
+    // bidirectional
     @OneToMany(mappedBy = "question")
     @JsonIgnoreProperties("question")
     private List<Subquestion> subquestions;

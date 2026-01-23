@@ -11,10 +11,15 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "program")
-public class Program {
+public class Module {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private String type;
+    private int moduleNo;
+    private String moduleName;
+
+    // Foreign key
+    @ManyToOne
+    @JoinColumn(name = "courseoffering_id")
+    private CourseOffering courseOffering;
 }

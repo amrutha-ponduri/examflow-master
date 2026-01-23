@@ -14,12 +14,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "course")
-public class Course {
+@Table(name = "regulation")
+public class Regulation {
     @Id
-    @Column(name = "coursecode")
-    private String courseCode;
-    @Column(name = "coursetitle")
-    private String courseTitle;
-    private double credits;
+    private String regulation;
+    @Column(name = "categoriescount")
+    private int sectionCount;
 }

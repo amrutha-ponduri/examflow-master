@@ -1,6 +1,5 @@
 package com.example.examcell.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,21 +11,19 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "subquestion")
-public class Subquestion {
+@Table(name = "sectionrules")
+public class SectionRules {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private String content;
-    @Column(name = "imageurl")
-    private String imageURL;
+    @Column(name = "sectionname")
+    private String sectionName;
     private int marks;
-    @Column(name = "bloomslevel")
-    private int bloomsLevel;
+    @Column(name = "minquestionscount")
+    private int minQuestionsCount;
 
     // Foreign key
     @ManyToOne
-    @JoinColumn(name = "question_id")
-    @JsonIgnoreProperties("subquestions")
-    private Question question;
+    @JoinColumn(name = "regulation")
+    private Regulation regulation;
 }
