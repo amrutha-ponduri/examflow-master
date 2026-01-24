@@ -1,0 +1,52 @@
+.paper-container {
+  width: 900px;
+  margin: auto;
+  font-family: "Times New Roman";
+  color: #000;
+}
+
+.college-header {
+  text-align: center;
+  border-bottom: 2px solid black;
+}
+
+.autonomous {
+  font-weight: bold;
+}
+
+.course-box {
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid black;
+  padding: 10px;
+  margin: 15px 0;
+}
+
+.unit-title {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.questions-section {
+  margin-top: 20px;
+}
+
+.question-card {
+  border: 1px solid black;
+  padding: 12px;
+  margin-bottom: 15px;
+}
+
+.question-number {
+  font-weight: bold;
+}
+
+.marks {
+  text-align: right;
+  font-style: italic;
+}
+
+.center-img {
+  display: block;
+  margin: auto;
+}

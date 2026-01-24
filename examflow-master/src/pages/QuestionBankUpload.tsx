@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { InlineMath, BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
 import MainLayout from '@/components/layout/MainLayout';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { Button } from '@/components/ui/button';
@@ -52,6 +54,18 @@ interface Module {
   categories: Category[];
 }
 
+const renderLatex = (text: string) => {
+  // Split by LaTeX commands like \frac{a}{b}
+  const parts = text.split(/(\\[a-zA-Z]+{[^}]+}{[^}]+})/g);
+
+  return parts.map((part, index) => {
+    if (part.startsWith("\\")) {
+      return <InlineMath key={index} math={part} />;
+    }
+    return <span key={index}>{part}</span>;
+  });
+};
+
 const QuestionBankUpload = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -97,7 +111,7 @@ const QuestionBankUpload = () => {
   // Step 2: Category Setup Functions
   const handleConfirmCategories = () => {
     if (!selectedModuleId) return;
-    
+
     const num = parseInt(numCategories);
     if (isNaN(num) || num < 1 || num > 10) {
       toast({
@@ -384,11 +398,10 @@ const QuestionBankUpload = () => {
                         {mod.categories.map((cat) => (
                           <div
                             key={cat.id}
-                            className={`p-4 rounded-lg border ${
-                              cat.confirmed
-                                ? 'bg-success/5 border-success/20'
-                                : 'bg-muted/50 border-border'
-                            }`}
+                            className={`p-4 rounded-lg border ${cat.confirmed
+                              ? 'bg-success/5 border-success/20'
+                              : 'bg-muted/50 border-border'
+                              }`}
                           >
                             <div className="flex items-center justify-between mb-3">
                               <span className="font-medium">Category {cat.categoryNumber}</span>
@@ -514,13 +527,24 @@ const QuestionBankUpload = () => {
                         <TableRow key={question.id}>
                           <TableCell className="font-medium">{question.sno}</TableCell>
                           <TableCell>
-                            <Textarea
-                              placeholder="Enter question content..."
-                              value={question.content}
-                              onChange={(e) => updateQuestion(question.id, e.target.value)}
-                              rows={2}
-                              className="min-h-[60px]"
-                            />
+                            <div className="relative">
+                              {/* Rendered LaTeX layer */}
+                              <div className="absolute inset-0 p-3 pointer-events-none text-transparent">
+                                <div className="text-foreground">
+                                  {renderLatex(question.content || ' ')}
+                                </div>
+                              </div>
+
+                              {/* Actual textarea */}
+                              <Textarea
+                                value={question.content}
+                                onChange={(e) => updateQuestion(question.id, e.target.value)}
+                                rows={3}
+                                className="relative bg-transparent text-transparent caret-foreground z-10"
+                              />
+                            </div>
+
+
                           </TableCell>
                           <TableCell className="text-center">
                             <Tooltip>
