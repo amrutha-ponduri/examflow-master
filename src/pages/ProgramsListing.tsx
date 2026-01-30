@@ -8,40 +8,33 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreVertical, Plus, GraduationCap, Edit, Trash2, Loader2 } from 'lucide-react';
+import { MoreVertical, Plus, GraduationCap, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { programApi, Program } from '@/services/programApi';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import MainLayout from '@/components/layout/MainLayout';
+
+export interface Program {
+  id: number;
+  program_name: string;
+}
+
+const STORAGE_KEY = 'programs_data';
+
+const getStoredPrograms = (): Program[] => {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  return stored ? JSON.parse(stored) : [];
+};
 
 const ProgramsListing: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [programs, setPrograms] = useState<Program[]>([]);
-  const [loading, setLoading] = useState(true);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [programToDelete, setProgramToDelete] = useState<Program | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    fetchPrograms();
+    setPrograms(getStoredPrograms());
   }, []);
-
-  const fetchPrograms = async () => {
-    try {
-      setLoading(true);
-      const data = await programApi.getAll();
-      setPrograms(data);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch programs. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAddClick = () => {
     navigate('/programs/add');
@@ -56,28 +49,20 @@ const ProgramsListing: React.FC = () => {
     setDeleteModalOpen(true);
   };
 
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (!programToDelete) return;
 
-    try {
-      setDeleting(true);
-      await programApi.delete(programToDelete.id);
-      setPrograms(prev => prev.filter(p => p.id !== programToDelete.id));
-      toast({
-        title: 'Success',
-        description: 'Program deleted successfully.',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete program. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setDeleting(false);
-      setDeleteModalOpen(false);
-      setProgramToDelete(null);
-    }
+    const updatedPrograms = programs.filter(p => p.id !== programToDelete.id);
+    setPrograms(updatedPrograms);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedPrograms));
+    
+    toast({
+      title: 'Success',
+      description: 'Program deleted successfully.',
+    });
+    
+    setDeleteModalOpen(false);
+    setProgramToDelete(null);
   };
 
   return (
@@ -89,12 +74,8 @@ const ProgramsListing: React.FC = () => {
           <p className="text-muted-foreground mt-1">Manage academic programs</p>
         </div>
 
-        {/* Loading State */}
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : programs.length === 0 ? (
+        {/* Content */}
+        {programs.length === 0 ? (
           /* Empty State */
           <div className="flex flex-col items-center justify-center h-64 text-center">
             <GraduationCap className="h-16 w-16 text-muted-foreground/50 mb-4" />
@@ -174,7 +155,7 @@ const ProgramsListing: React.FC = () => {
           onOpenChange={setDeleteModalOpen}
           title="Delete Program"
           description={`Are you sure you want to delete "${programToDelete?.program_name}"? This action cannot be undone.`}
-          confirmText={deleting ? 'Deleting...' : 'Delete'}
+          confirmText="Delete"
           cancelText="Cancel"
           onConfirm={confirmDelete}
           variant="destructive"
