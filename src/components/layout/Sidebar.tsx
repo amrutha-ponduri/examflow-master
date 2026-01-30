@@ -5,7 +5,8 @@ import {
   FileText, 
   Upload, 
   Settings,
-  ClipboardList
+  ClipboardList,
+  GraduationCap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -25,6 +26,7 @@ const Sidebar = () => {
     return [
       { to: '/admin', icon: Home, label: 'Dashboard' },
       { to: '/generate', icon: ClipboardList, label: 'Question Generation' },
+      { to: '/programs', icon: GraduationCap, label: 'Programs' },
     ];
   };
 

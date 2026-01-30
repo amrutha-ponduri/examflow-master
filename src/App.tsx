@@ -18,6 +18,8 @@ import DepartmentForm from "./pages/DepartmentForm";
 import ProgramForm from "./pages/ProgramForm";
 import RegulationForm from "./pages/RegulationForm";
 import CourseOfferingContainer from "./pages/CourseOfferingContainer";
+import ProgramsListing from "./pages/ProgramsListing";
+import ProgramFormPage from "./pages/ProgramFormPage";
 import NotFound from "./pages/NotFound";
 
 
@@ -45,6 +47,9 @@ const App = () => (
             <Route path="/question-bank/:id" element={<QuestionBankView />} />
             <Route path="/generate" element={<QuestionGeneration />} />
             <Route path="/upload" element={<QuestionBankUpload />} />
+            <Route path="/programs" element={<ProgramsListing />} />
+            <Route path="/programs/add" element={<ProgramFormPage />} />
+            <Route path="/programs/edit/:id" element={<ProgramFormPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
