@@ -6,8 +6,23 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { programApi, Program } from '@/services/programApi';
 import MainLayout from '@/components/layout/MainLayout';
+
+interface Program {
+  id: number;
+  program_name: string;
+}
+
+const STORAGE_KEY = 'programs_data';
+
+const getStoredPrograms = (): Program[] => {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  return stored ? JSON.parse(stored) : [];
+};
+
+const savePrograms = (programs: Program[]) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(programs));
+};
 
 const ProgramFormPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,25 +34,29 @@ const ProgramFormPage: React.FC = () => {
   const programFromState = location.state?.program as Program | undefined;
 
   const [programName, setProgramName] = useState('');
-  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (isEditMode && programFromState) {
       setProgramName(programFromState.program_name);
     } else if (isEditMode && id) {
-      // If no state is passed, we could fetch the program by ID
-      // For now, redirect back if no data
-      toast({
-        title: 'Error',
-        description: 'Program data not found.',
-        variant: 'destructive',
-      });
-      navigate('/programs');
+      // Try to find program in localStorage
+      const programs = getStoredPrograms();
+      const program = programs.find(p => p.id === parseInt(id));
+      if (program) {
+        setProgramName(program.program_name);
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Program data not found.',
+          variant: 'destructive',
+        });
+        navigate('/programs');
+      }
     }
   }, [isEditMode, programFromState, id, navigate, toast]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const trimmedName = programName.trim();
@@ -51,33 +70,33 @@ const ProgramFormPage: React.FC = () => {
       return;
     }
 
-    try {
-      setSubmitting(true);
+    setSubmitting(true);
 
-      if (isEditMode && id) {
-        await programApi.update(parseInt(id), { program_name: trimmedName });
-        toast({
-          title: 'Success',
-          description: 'Program updated successfully.',
-        });
-      } else {
-        await programApi.create({ program_name: trimmedName });
-        toast({
-          title: 'Success',
-          description: 'Program added successfully.',
-        });
-      }
+    const programs = getStoredPrograms();
 
-      navigate('/programs');
-    } catch (error) {
+    if (isEditMode && id) {
+      // Update existing program
+      const updatedPrograms = programs.map(p => 
+        p.id === parseInt(id) ? { ...p, program_name: trimmedName } : p
+      );
+      savePrograms(updatedPrograms);
       toast({
-        title: 'Error',
-        description: `Failed to ${isEditMode ? 'update' : 'add'} program. Please try again.`,
-        variant: 'destructive',
+        title: 'Success',
+        description: 'Program updated successfully.',
       });
-    } finally {
-      setSubmitting(false);
+    } else {
+      // Add new program
+      const newId = programs.length > 0 ? Math.max(...programs.map(p => p.id)) + 1 : 1;
+      const newProgram: Program = { id: newId, program_name: trimmedName };
+      savePrograms([...programs, newProgram]);
+      toast({
+        title: 'Success',
+        description: 'Program added successfully.',
+      });
     }
+
+    setSubmitting(false);
+    navigate('/programs');
   };
 
   const handleBack = () => {
