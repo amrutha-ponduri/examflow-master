@@ -1,0 +1,175 @@
+{
+    "yos": "III BTECH",
+    "sem": "II",
+    "program": "BTECH",
+    "dept": "UG/CSE-A, B, C",
+    "fullform": "DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING",
+    "academicyear": "2025-26",
+    "coursecode": "23A3140IT",
+    "coursetitle": "MACHINE LEARNING",
+    "credits": "3",
+    "facultylist": [
+        "Dr. G. Sreenivasulu Reddy / Dr. C. Rama Mohan"
+    ],
+    "regulation": "NECN BTECH 23",
+    "modulename": "UNIT-1: Introduction to Machine Learning",
+    "questionbank": [
+        {
+            "module": "1",
+            "questions": {
+                "twomarksquestioncount": "5",
+                "twomarks": [
+                    {
+                        "co": "1",
+                        "marks": "2",
+                        "subquestions": [
+                            {
+                                "marks": "5",
+                                "content": "Differentiate between learning by rote and learning by induction.",
+                                "bloomslevel": "2",
+                                "imageurl": ""
+                            },
+                            {
+                                "marks": "5",
+                                "content": "Differentiate between learning by rote and learning by induction.",
+                                "bloomslevel": "2",
+                                "imageurl": ""
+                            }
+                        ]
+                    },
+                    {
+                        "co": "1",
+                        "marks": "10",
+                        "subquestions": [
+                            {
+                                "marks": "5",
+                                "content": "Differentiate between learning by rote and learning by induction.",
+                                "bloomslevel": "2",
+                                "imageurl": ""
+                            }
+                        ]
+                    },
+                    {
+                        "co": "1",
+                        "marks": "10",
+                        "subquestions": [
+                            {
+                                "marks": "5",
+                                "content": "Differentiate between learning by rote and learning by induction.",
+                                "bloomslevel": "2",
+                                "imageurl": ""
+                            }
+                        ]
+                    },
+                    {
+                        "co": "1",
+                        "marks": "10",
+                        "subquestions": [
+                            {
+                                "marks": "5",
+                                "content": "Differentiate between learning by rote and learning by induction.",
+                                "bloomslevel": "2",
+                                "imageurl": ""
+                            }
+                        ]
+                    },
+                    {
+                        "co": "1",
+                        "marks": "10",
+                        "subquestions": [
+                            {
+                                "marks": "5",
+                                "content": "Differentiate between learning by rote and learning by induction.",
+                                "bloomslevel": "2",
+                                "imageurl": ""
+                            }
+                        ]
+                    }
+                ],
+                "tenmarksquestioncount": "5",
+                "tenmarks": [
+                    [
+                        {
+                            "co": "1",
+                            "marks": "10",
+                            "subquestions": [
+                                {
+                                    "marks": "5",
+                                    "content": "Differentiate between learning by rote and learning by induction.",
+                                    "bloomslevel": "2",
+                                    "imageurl": ""
+                                },
+                                {
+                                    "marks": "5",
+                                    "content": "Differentiate between learning by rote and learning by induction.",
+                                    "bloomslevel": "2",
+                                    "imageurl": ""
+                                }
+                            ]
+                        },
+                        {
+                            "co": "1",
+                            "marks": "10",
+                            "subquestions": [
+                                {
+                                    "marks": "5",
+                                    "content": "Differentiate between learning by rote and learning by induction.",
+                                    "bloomslevel": "2",
+                                    "imageurl": ""
+                                },
+                                {
+                                    "marks": "5",
+                                    "content": "Differentiate between learning by rote and learning by induction.",
+                                    "bloomslevel": "2",
+                                    "imageurl": ""
+                                }
+                            ]
+                        },
+                        {
+                            "co": "1",
+                            "marks": "10",
+                            "subquestions": [
+                                {
+                                    "marks": "5",
+                                    "content": "Differentiate between learning by rote and learning by induction.",
+                                    "bloomslevel": "2",
+                                    "imageurl": ""
+                                }
+                            ]
+                        },
+                        {
+                            "co": "1",
+                            "marks": "10",
+                            "subquestions": [
+                                {
+                                    "marks": "5",
+                                    "content": "Differentiate between learning by rote and learning by induction.",
+                                    "bloomslevel": "2",
+                                    "imageurl": ""
+                                }
+                            ]
+                        },
+                        {
+                            "co": "1",
+                            "marks": "10",
+                            "subquestions": [
+                                {
+                                    "marks": "5",
+                                    "content": "Differentiate between learning by rote and learning by induction.",
+                                    "bloomslevel": "2",
+                                    "imageurl": ""
+                                },
+                                {
+                                    "marks": "5",
+                                    "content": "Differentiate between learning by rote and learning by induction.",
+                                    "bloomslevel": "2",
+                                    "imageurl": ""
+                                }
+                            ]
+                        }
+                    ]
+                ]
+            }
+        }
+    ]
+}

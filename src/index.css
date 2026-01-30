@@ -1,0 +1,159 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* College Exam Cell - Professional Navy Blue Design System */
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 215 50% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 50% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 50% 15%;
+
+    --primary: 215 60% 25%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 25% 93%;
+    --secondary-foreground: 215 50% 20%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 20% 45%;
+
+    --accent: 215 45% 90%;
+    --accent-foreground: 215 60% 25%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 72% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 214 25% 88%;
+    --input: 214 25% 88%;
+    --ring: 215 60% 25%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 215 60% 20%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-primary: 210 100% 70%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 50% 30%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 215 40% 30%;
+    --sidebar-ring: 210 100% 70%;
+
+    /* Custom tokens */
+    --navy-50: 214 100% 97%;
+    --navy-100: 214 95% 93%;
+    --navy-200: 213 97% 87%;
+    --navy-300: 212 96% 78%;
+    --navy-400: 213 94% 68%;
+    --navy-500: 217 91% 60%;
+    --navy-600: 221 83% 53%;
+    --navy-700: 224 76% 48%;
+    --navy-800: 226 71% 40%;
+    --navy-900: 224 64% 33%;
+    --navy-950: 226 57% 21%;
+
+    --gradient-header: linear-gradient(135deg, hsl(215 60% 25%), hsl(224 64% 33%));
+    --shadow-card: 0 1px 3px 0 hsl(215 50% 15% / 0.1), 0 1px 2px -1px hsl(215 50% 15% / 0.1);
+    --shadow-elevated: 0 10px 15px -3px hsl(215 50% 15% / 0.1), 0 4px 6px -4px hsl(215 50% 15% / 0.1);
+  }
+
+  .dark {
+    --background: 224 64% 10%;
+    --foreground: 210 20% 95%;
+
+    --card: 224 50% 14%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 224 50% 14%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 210 100% 70%;
+    --primary-foreground: 224 64% 10%;
+
+    --secondary: 224 40% 20%;
+    --secondary-foreground: 210 20% 95%;
+
+    --muted: 224 40% 18%;
+    --muted-foreground: 215 20% 60%;
+
+    --accent: 224 40% 25%;
+    --accent-foreground: 210 20% 95%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 60% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 80% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 224 30% 25%;
+    --input: 224 30% 25%;
+    --ring: 210 100% 70%;
+
+    --sidebar-background: 224 64% 8%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-primary: 210 100% 70%;
+    --sidebar-primary-foreground: 224 64% 10%;
+    --sidebar-accent: 224 40% 18%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 224 30% 20%;
+    --sidebar-ring: 210 100% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .btn-success {
+    @apply bg-success text-success-foreground hover:bg-success/90;
+  }
+
+  .status-pending {
+    @apply bg-warning/10 text-warning border border-warning/20;
+  }
+
+  .status-accepted {
+    @apply bg-success/10 text-success border border-success/20;
+  }
+
+  .status-rejected {
+    @apply bg-destructive/10 text-destructive border border-destructive/20;
+  }
+
+  .table-header {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  .card-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+}
