@@ -448,29 +448,29 @@ const QuestionBankUpload = () => {
   };
 
   const handleUpload = () => {
-  for (const mod of modules) {
-    for (const cat of mod.categories) {
-      const minRequired = cat.numberOfQuestions;
+    for (const mod of modules) {
+      for (const cat of mod.categories) {
+        const minRequired = cat.numberOfQuestions;
 
-      if (cat.questions.length < minRequired) {
-        toast({
-          title: "Not enough questions",
-          description: `Module ${mod.moduleNumber}, Category ${cat.categoryNumber} requires at least ${minRequired} questions`,
-          variant: "destructive",
-        });
-        return;
+        if (cat.questions.length < minRequired) {
+          toast({
+            title: "Not enough questions",
+            description: `Module ${mod.moduleNumber}, Category ${cat.categoryNumber} requires at least ${minRequired} questions`,
+            variant: "destructive",
+          });
+          return;
+        }
       }
     }
-  }
 
-  // ✅ All validations passed
-  toast({
-    title: "Uploaded",
-    description: "Question bank uploaded successfully",
-  });
+    // ✅ All validations passed
+    toast({
+      title: "Uploaded",
+      description: "Question bank uploaded successfully",
+    });
 
-  navigate("/faculty");
-};
+    navigate("/faculty");
+  };
 
 
   const selectedCategory = getSelectedCategory();
@@ -649,6 +649,7 @@ const QuestionBankUpload = () => {
 
               {/* Regulation */}
               <div className="space-y-2">
+              <div className="space-y-2">
                 <Label htmlFor="regulation">Regulation</Label>
                 <select
                   id="regulation"
@@ -664,6 +665,7 @@ const QuestionBankUpload = () => {
                   ))}
                 </select>
 
+              </div>
               </div>
 
               {/* Department */}
@@ -728,11 +730,11 @@ const QuestionBankUpload = () => {
         </Card>
 
         <Card><Button onClick={fetchConfiguration}>
-  Load Question Pattern
-</Button>
-</Card>
+          Load Question Pattern
+        </Button>
+        </Card>
         {/* Step 3: Question Management */}
-       {configLoaded && (
+        {configLoaded && (
           <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle>Step 3: Question Management</CardTitle>
