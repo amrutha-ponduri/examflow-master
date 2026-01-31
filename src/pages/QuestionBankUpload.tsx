@@ -113,8 +113,9 @@ const QuestionBankUpload = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
 
   const [department, setDepartment] = useState<string>("");
-const [program, setProgram] = useState<string>("");
-const [regulation, setRegulation] = useState<string>("");
+  const [course, setCourse] = useState<string>("");
+  const [program, setProgram] = useState<string>("");
+  const [regulation, setRegulation] = useState<string>("");
 
 
   const [departments, setDepartments] = useState<DepartmentDropdown[]>([]);
@@ -575,6 +576,24 @@ const [regulation, setRegulation] = useState<string>("");
                   {departments.map((dept) => (
                     <option key={dept.id} value={dept.id}>
                       {dept.abbreviation}
+                    </option>
+                  ))}
+                </select>
+
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="course">Course</Label>
+                <select
+                  id="course"
+                  value={course}
+                  onChange={(e) => setCourse(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">Select Course</option>
+                  {courses.map((course) => (
+                    <option key={course.id} value={course.id}>
+                      {course.course_code}-{course.course_title}
                     </option>
                   ))}
                 </select>
