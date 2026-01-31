@@ -133,11 +133,18 @@ const QuestionBankUpload = () => {
   const [regulations, setRegulations] = useState<RegulationDropdown[]>([]);
 
   const [configLoaded, setConfigLoaded] = useState(false);
-const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({});
-
+  const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({});
 
   const fetchConfiguration = async () => {
   try {
+    if (!department || !course || !program || !regulation) {
+      toast({
+        title: "Missing fields",
+        description: "Please select Regulation, Department, Course and Program",
+        variant: "destructive",
+      });
+      return;
+    }
     const res = await fetch(
       "http://localhost:8080/questionbanks/configuration_details",
       {
@@ -151,14 +158,15 @@ const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({
         }),
       }
     );
-
+    
     const data = await res.json();
+    console.log(data);
 
     // 🔹 Build modules from backend
-    const backendModules: Module[] = data.module_info.map((m: any) => ({
+    const backendModules: Module[] = data.modules_info.map((m: any) => ({
       id: `module-${m.module_no}`,
       moduleNumber: m.module_no,
-      categories: data.section_rules.map((sec: any, idx: number) => ({
+      categories: data.sections_rules.map((sec: any, idx: number) => ({
         id: `module-${m.module_no}-cat-${idx + 1}`,
         categoryNumber: idx + 1,
         marks: sec.marks,
@@ -185,7 +193,7 @@ const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({
 
     // 🔹 Save min rules for validation
     const minMap: Record<string, number> = {};
-    data.section_rules.forEach((sec: any, idx: number) => {
+    data.sections_rules.forEach((sec: any, idx: number) => {
       minMap[`cat-${idx + 1}`] = sec.min_questions_count;
     });
     setMinQuestionsMap(minMap);
@@ -640,7 +648,7 @@ const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
               {/* Regulation */}
-              {/* <div className="space-y-2">
+              <div className="space-y-2">
                 <Label htmlFor="regulation">Regulation</Label>
                 <select
                   id="regulation"
@@ -656,7 +664,7 @@ const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({
                   ))}
                 </select>
 
-              </div> */}
+              </div>
 
               {/* Department */}
               <div className="space-y-2">
