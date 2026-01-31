@@ -133,73 +133,92 @@ const QuestionBankUpload = () => {
   const [regulations, setRegulations] = useState<RegulationDropdown[]>([]);
 
   const [configLoaded, setConfigLoaded] = useState(false);
-const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({});
+  const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({});
 
 
   const fetchConfiguration = async () => {
-  try {
-    const res = await fetch(
-      "http://localhost:8080/questionbanks/configuration_details",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          department_id: department,
-          course_id: course,
-          program_id: program,
-          regulation_id: regulation,
-        }),
+    try {
+      // 🔍 Frontend validation (important)
+      if (!department || !course || !program || !regulation) {
+        toast({
+          title: "Missing selection",
+          description: "Please select Department, Course, Program and Regulation",
+          variant: "destructive",
+        });
+        return;
       }
-    );
 
-    const data = await res.json();
+      const res = await fetch(
+        "http://localhost:8080/questionbanks/configuration_details",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            department_id: Number(department),
+            course_id: Number(course),
+            program_id: Number(program),
+            regulation_id: Number(regulation),
+          }),
+        }
+      );
 
-    // 🔹 Build modules from backend
-    const backendModules: Module[] = data.module_info.map((m: any) => ({
-      id: `module-${m.module_no}`,
-      moduleNumber: m.module_no,
-      categories: data.section_rules.map((sec: any, idx: number) => ({
-        id: `module-${m.module_no}-cat-${idx + 1}`,
-        categoryNumber: idx + 1,
-        marks: sec.marks,
-        numberOfQuestions: sec.min_questions_count,
-        confirmed: true,
-        questions: Array.from(
-          { length: sec.min_questions_count },
-          (_, i) => ({
-            id: `m${m.module_no}-c${idx + 1}-q${i + 1}`,
-            sno: i + 1,
-            blocks: [
-              {
-                id: crypto.randomUUID(),
-                content: "",
-                imageUrls: [],
-              },
-            ],
-          })
-        ),
-      })),
-    }));
+      // 🔴 Handle backend errors explicitly
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Backend error:", errorText);
 
-    setModules(backendModules);
+        throw new Error(`Backend responded with ${res.status}`);
+      }
 
-    // 🔹 Save min rules for validation
-    const minMap: Record<string, number> = {};
-    data.section_rules.forEach((sec: any, idx: number) => {
-      minMap[`cat-${idx + 1}`] = sec.min_questions_count;
-    });
-    setMinQuestionsMap(minMap);
+      const data = await res.json();
+      console.log("Config response:", data);
 
-    setModulesConfirmed(true);
-    setConfigLoaded(true);
-  } catch (err) {
-    toast({
-      title: "Configuration error",
-      description: "Failed to load question bank configuration",
-      variant: "destructive",
-    });
-  }
-};
+      // ✅ SAFETY CHECK
+      if (!data.module_info || !data.section_rules) {
+        throw new Error("Invalid configuration response");
+      }
+
+      // 🔹 Build modules
+      const backendModules: Module[] = data.module_info.map((m: any) => ({
+        id: `module-${m.module_no}`,
+        moduleNumber: m.module_no,
+        categories: data.section_rules.map((sec: any, idx: number) => ({
+          id: `module-${m.module_no}-cat-${idx + 1}`,
+          categoryNumber: idx + 1,
+          marks: sec.marks,
+          numberOfQuestions: sec.min_questions_count,
+          confirmed: true,
+          questions: Array.from(
+            { length: sec.min_questions_count },
+            (_, i) => ({
+              id: `m${m.module_no}-c${idx + 1}-q${i + 1}`,
+              sno: i + 1,
+              blocks: [
+                {
+                  id: crypto.randomUUID(),
+                  content: "",
+                  imageUrls: [],
+                },
+              ],
+            })
+          ),
+        })),
+      }));
+
+      setModules(backendModules);
+      setModulesConfirmed(true);
+      setConfigLoaded(true);
+    } catch (err: any) {
+      console.error("Fetch config failed:", err);
+
+      toast({
+        title: "Configuration error",
+        description:
+          err?.message || "Failed to load question bank configuration",
+        variant: "destructive",
+      });
+    }
+  };
 
 
   useEffect(() => {
@@ -440,29 +459,29 @@ const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({
   };
 
   const handleUpload = () => {
-  for (const mod of modules) {
-    for (const cat of mod.categories) {
-      const minRequired = cat.numberOfQuestions;
+    for (const mod of modules) {
+      for (const cat of mod.categories) {
+        const minRequired = cat.numberOfQuestions;
 
-      if (cat.questions.length < minRequired) {
-        toast({
-          title: "Not enough questions",
-          description: `Module ${mod.moduleNumber}, Category ${cat.categoryNumber} requires at least ${minRequired} questions`,
-          variant: "destructive",
-        });
-        return;
+        if (cat.questions.length < minRequired) {
+          toast({
+            title: "Not enough questions",
+            description: `Module ${mod.moduleNumber}, Category ${cat.categoryNumber} requires at least ${minRequired} questions`,
+            variant: "destructive",
+          });
+          return;
+        }
       }
     }
-  }
 
-  // ✅ All validations passed
-  toast({
-    title: "Uploaded",
-    description: "Question bank uploaded successfully",
-  });
+    // ✅ All validations passed
+    toast({
+      title: "Uploaded",
+      description: "Question bank uploaded successfully",
+    });
 
-  navigate("/faculty");
-};
+    navigate("/faculty");
+  };
 
 
   const selectedCategory = getSelectedCategory();
@@ -640,7 +659,7 @@ const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
               {/* Regulation */}
-              {/* <div className="space-y-2">
+              <div className="space-y-2">
                 <Label htmlFor="regulation">Regulation</Label>
                 <select
                   id="regulation"
@@ -656,7 +675,7 @@ const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({
                   ))}
                 </select>
 
-              </div> */}
+              </div>
 
               {/* Department */}
               <div className="space-y-2">
@@ -720,11 +739,11 @@ const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({
         </Card>
 
         <Card><Button onClick={fetchConfiguration}>
-  Load Question Pattern
-</Button>
-</Card>
+          Load Question Pattern
+        </Button>
+        </Card>
         {/* Step 3: Question Management */}
-       {configLoaded && (
+        {configLoaded && (
           <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle>Step 3: Question Management</CardTitle>
