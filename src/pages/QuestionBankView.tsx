@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Edit, Check, X, MessageSquare, AlertCircle } from 'lucide-react';
+import html2pdf from "html2pdf.js";
 import data from "./data.json";
 import QuestionTable from "./QuestionTable";
 import "./QuestionPaper1.css";
@@ -31,6 +32,8 @@ const QuestionBankView = () => {
   const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [paperData, setPaperData] = useState<any>(null);
+  const pdfRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     setPaperData(data);
   }, []);
@@ -53,6 +56,28 @@ const QuestionBankView = () => {
   const twoMarksLimit = Number(questionsData?.twomarksquestioncount ?? 0);
   const tenMarksLimit = Number(questionsData?.tenmarksquestioncount ?? 0);
 
+  const downloadPDF = () => {
+    if (!pdfRef.current) return;
+
+    html2pdf()
+      .from(pdfRef.current)
+      .set({
+        margin: 0,
+        filename: `${paperData.coursecode}_Question_Bank.pdf`,
+        image: { type: "jpeg", quality: 1 },
+        html2canvas: {
+          scale: 2,
+          scrollY: 0,
+          useCORS: true,
+        },
+        jsPDF: {
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait",
+        },
+      })
+      .save();
+  };
 
   if (!questionBank) {
     return (
@@ -113,7 +138,7 @@ const QuestionBankView = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {questionBank.date} 
+            {questionBank.date}
             {(isFacultyMode || questionBank.date === 'pending') && (
               <Button variant="outline" size="sm" onClick={handleEdit}>
                 <Edit className="h-4 w-4 mr-2" />
@@ -132,7 +157,7 @@ const QuestionBankView = () => {
             <div className="bg-muted/50 rounded-lg p-8 min-h-[400px] border-2 border-dashed border-border">
 
               <div className="space-y-6">
-                <div className="paper-container">
+                <div className="paper-container" ref={pdfRef}>
 
                   <div className="college-header">
                     <img src="/college.jpeg" alt="college" className="center-img" />
@@ -176,6 +201,9 @@ const QuestionBankView = () => {
                     />
                   </div>
 
+                </div>
+                <div className="dwnl flex justify-end pt-4">
+                  <Button onClick={downloadPDF}>Download</Button>
                 </div>
               </div>
             </div>
