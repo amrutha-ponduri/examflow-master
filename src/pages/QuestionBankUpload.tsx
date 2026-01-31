@@ -179,10 +179,10 @@ const QuestionBankUpload = () => {
       }
 
       // 🔹 Build modules
-      const backendModules: Module[] = data.module_info.map((m: any) => ({
+      const backendModules: Module[] = data.modules_info.map((m: any) => ({
         id: `module-${m.module_no}`,
         moduleNumber: m.module_no,
-        categories: data.section_rules.map((sec: any, idx: number) => ({
+        categories: data.sections_rules.map((sec: any, idx: number) => ({
           id: `module-${m.module_no}-cat-${idx + 1}`,
           categoryNumber: idx + 1,
           marks: sec.marks,
