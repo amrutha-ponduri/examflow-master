@@ -81,6 +81,17 @@ interface RegulationDropdown {
   regulation: string;
 }
 
+interface SectionRule {
+  section_name: string;
+  min_questions_count: number;
+  marks: number;
+}
+
+const [configLoaded, setConfigLoaded] = useState(false);
+const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({});
+
+
+
 const renderLatex = (text: string) => {
   const parts = text.split(/(\$[^$]+\$)/g);
 
@@ -122,6 +133,71 @@ const QuestionBankUpload = () => {
   const [courses, setCourses] = useState<CourseDropdown[]>([]);
   const [programs, setPrograms] = useState<ProgramDropdown[]>([]);
   const [regulations, setRegulations] = useState<RegulationDropdown[]>([]);
+
+  const fetchConfiguration = async () => {
+  try {
+    const res = await fetch(
+      "http://localhost:8080/questionbanks/configuration_details",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          department_id: department,
+          course_id: course,
+          program_id: program,
+          regulation_id: regulation,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    // 🔹 Build modules from backend
+    const backendModules: Module[] = data.module_info.map((m: any) => ({
+      id: `module-${m.module_no}`,
+      moduleNumber: m.module_no,
+      categories: data.section_rules.map((sec: any, idx: number) => ({
+        id: `module-${m.module_no}-cat-${idx + 1}`,
+        categoryNumber: idx + 1,
+        marks: sec.marks,
+        numberOfQuestions: sec.min_questions_count,
+        confirmed: true,
+        questions: Array.from(
+          { length: sec.min_questions_count },
+          (_, i) => ({
+            id: `m${m.module_no}-c${idx + 1}-q${i + 1}`,
+            sno: i + 1,
+            blocks: [
+              {
+                id: crypto.randomUUID(),
+                content: "",
+                imageUrls: [],
+              },
+            ],
+          })
+        ),
+      })),
+    }));
+
+    setModules(backendModules);
+
+    // 🔹 Save min rules for validation
+    const minMap: Record<string, number> = {};
+    data.section_rules.forEach((sec: any, idx: number) => {
+      minMap[`cat-${idx + 1}`] = sec.min_questions_count;
+    });
+    setMinQuestionsMap(minMap);
+
+    setModulesConfirmed(true);
+    setConfigLoaded(true);
+  } catch (err) {
+    toast({
+      title: "Configuration error",
+      description: "Failed to load question bank configuration",
+      variant: "destructive",
+    });
+  }
+};
 
 
   useEffect(() => {
@@ -362,13 +438,30 @@ const QuestionBankUpload = () => {
   };
 
   const handleUpload = () => {
-    setShowUploadModal(false);
-    toast({
-      title: 'Uploaded',
-      description: 'Question bank has been uploaded successfully.',
-    });
-    navigate('/faculty');
-  };
+  for (const mod of modules) {
+    for (const cat of mod.categories) {
+      const minRequired = cat.numberOfQuestions;
+
+      if (cat.questions.length < minRequired) {
+        toast({
+          title: "Not enough questions",
+          description: `Module ${mod.moduleNumber}, Category ${cat.categoryNumber} requires at least ${minRequired} questions`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+  }
+
+  // ✅ All validations passed
+  toast({
+    title: "Uploaded",
+    description: "Question bank uploaded successfully",
+  });
+
+  navigate("/faculty");
+};
+
 
   const selectedCategory = getSelectedCategory();
 
@@ -623,162 +716,11 @@ const QuestionBankUpload = () => {
           </CardContent>
 
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Step 1: Module Setup</CardTitle>
-            <CardDescription>Define the number of modules in your question bank</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-end gap-3">
-              <div className="space-y-2 flex-1 max-w-xs">
-                <Label htmlFor="numModules">Number of Modules</Label>
-                <Input
-                  id="numModules"
-                  type="number"
-                  min="1"
-                  max="10"
-                  placeholder="Enter number of modules"
-                  value={numberOfModules}
-                  onChange={(e) => setNumberOfModules(e.target.value.replace(/\D/g, ''))}
-                  disabled={modulesConfirmed}
-                />
-              </div>
-              <Button
-                onClick={handleConfirmModules}
-                disabled={!numberOfModules || modulesConfirmed}
-              >
-                <Check className="h-4 w-4 mr-2" />
-                Confirm
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Step 2: Category Setup */}
-        {modulesConfirmed && (
-          <Card className="animate-fade-in">
-            <CardHeader>
-              <CardTitle>Step 2: Category Setup</CardTitle>
-              <CardDescription>Configure categories for each module</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Module Selection & Category Count */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Select Module</Label>
-                  <Select value={selectedModuleId} onValueChange={setSelectedModuleId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select module" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {modules.map((mod) => (
-                        <SelectItem key={mod.id} value={mod.id}>
-                          Module {mod.moduleNumber}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Number of Categories</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="10"
-                    placeholder="Enter number"
-                    value={numCategories}
-                    onChange={(e) => setNumCategories(e.target.value.replace(/\D/g, ''))}
-                    disabled={!selectedModuleId}
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button
-                    onClick={handleConfirmCategories}
-                    disabled={!selectedModuleId || !numCategories}
-                  >
-                    <Check className="h-4 w-4 mr-2" />
-                    Add Categories
-                  </Button>
-                </div>
-              </div>
-
-              {/* Categories per Module */}
-              {modules.map(
-                (mod) =>
-                  mod.categories.length > 0 && (
-                    <div key={mod.id} className="space-y-3">
-                      <h4 className="font-semibold text-foreground">Module {mod.moduleNumber}</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {mod.categories.map((cat) => (
-                          <div
-                            key={cat.id}
-                            className={`p-4 rounded-lg border ${cat.confirmed
-                              ? 'bg-success/5 border-success/20'
-                              : 'bg-muted/50 border-border'
-                              }`}
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="font-medium">Category {cat.categoryNumber}</span>
-                              {cat.confirmed && (
-                                <span className="text-xs text-success font-medium">✓ Configured</span>
-                              )}
-                            </div>
-                            <div className="space-y-3">
-                              <div className="space-y-1">
-                                <Label className="text-xs">Marks</Label>
-                                <Input
-                                  type="number"
-                                  min="1"
-                                  placeholder="Marks"
-                                  value={cat.marks || ''}
-                                  onChange={(e) =>
-                                    updateCategoryConfig(mod.id, cat.id, 'marks', e.target.value)
-                                  }
-                                  disabled={cat.confirmed}
-                                  className="h-9"
-                                />
-                              </div>
-                              <div className="flex items-end gap-2">
-                                <div className="flex-1 space-y-1">
-                                  <Label className="text-xs">Questions</Label>
-                                  <Input
-                                    type="number"
-                                    min="1"
-                                    placeholder="Count"
-                                    value={cat.numberOfQuestions || ''}
-                                    onChange={(e) =>
-                                      updateCategoryConfig(
-                                        mod.id,
-                                        cat.id,
-                                        'numberOfQuestions',
-                                        e.target.value
-                                      )
-                                    }
-                                    disabled={cat.confirmed}
-                                    className="h-9"
-                                  />
-                                </div>
-                                {!cat.confirmed && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() => confirmCategory(mod.id, cat.id)}
-                                    disabled={!cat.marks || !cat.numberOfQuestions}
-                                  >
-                                    <Check className="h-4 w-4" />
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )
-              )}
-            </CardContent>
-          </Card>
-        )}
-
+        <Card><Button onClick={fetchConfiguration}>
+  Load Question Pattern
+</Button>
+</Card>
         {/* Step 3: Question Management */}
         {modulesConfirmed && modules.some((m) => m.categories.some((c) => c.confirmed)) && (
           <Card className="animate-fade-in">
