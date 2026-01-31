@@ -113,8 +113,8 @@ const QuestionBankView = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <StatusBadge status={questionBank.status} />
-            {(isFacultyMode || questionBank.status === 'pending') && (
+            {questionBank.date} 
+            {(isFacultyMode || questionBank.date === 'pending') && (
               <Button variant="outline" size="sm" onClick={handleEdit}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit

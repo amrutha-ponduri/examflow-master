@@ -14,7 +14,7 @@ export const mockQuestionBanks: QuestionBank[] = [
     reviewer: 'Dr. Rao',
     date: '31-01-2026',
     facultyName: 'Prof. Ram',
-    subject: 'Data Structures',
+    subject: 'Machine Learning',
     status: 'pending',
     submittedAt: '2024-01-15',
     modules: [

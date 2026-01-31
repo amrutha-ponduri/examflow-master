@@ -25,7 +25,7 @@
                         "subquestions": [
                             {
                                 "marks": "5",
-                                "content": "Differentiate between learning by rote and learning by induction.",
+                                "content": "Derive the cost function used in Linear Regression and explain each term. $J(\\theta) = \\frac{1}{2m} \\sum_{i=1}^{m} (h_\\theta(x^{(i)}) - y^{(i)})^2$",
                                 "bloomslevel": "2",
                                 "imageurl": ""
                             },
@@ -113,7 +113,7 @@
                             "subquestions": [
                                 {
                                     "marks": "5",
-                                    "content": "Differentiate between learning by rote and learning by induction.",
+                                    "content": "Write the gradient descent update rule for parameter $\\theta_j := \\theta_j - \\alpha \\frac{1}{m} \\sum_{i=1}^{m} (h_\\theta(x^{(i)}) - y^{(i)}) x_j^{(i)}$",
                                     "bloomslevel": "2",
                                     "imageurl": ""
                                 },
