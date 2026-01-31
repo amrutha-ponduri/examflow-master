@@ -31,7 +31,7 @@ const CourseOfferingsListing: React.FC = () => {
   const fetchOfferings = async () => {
     try {
       setLoading(true);
-      const data = await courseOfferingsApi.getAll();
+      const data: CourseOfferingListItem[] = await courseOfferingsApi.getAll();
       setOfferings(data);
     } catch (error) {
       toast({
@@ -44,14 +44,9 @@ const CourseOfferingsListing: React.FC = () => {
     }
   };
 
-  const handleAddClick = () => {
-    navigate('/course-offerings/add');
-  };
-
-  const handleEditClick = (offering: CourseOfferingListItem) => {
+  const handleAddClick = () => navigate('/course-offerings/add');
+  const handleEditClick = (offering: CourseOfferingListItem) =>
     navigate(`/course-offerings/edit/${offering.id}`);
-  };
-
   const handleDeleteClick = (offering: CourseOfferingListItem) => {
     setOfferingToDelete(offering);
     setDeleteModalOpen(true);
@@ -59,21 +54,13 @@ const CourseOfferingsListing: React.FC = () => {
 
   const confirmDelete = async () => {
     if (!offeringToDelete) return;
-
     try {
       setDeleting(true);
       await courseOfferingsApi.delete(offeringToDelete.id);
-      setOfferings((prev) => prev.filter((o) => o.id !== offeringToDelete.id));
-      toast({
-        title: 'Success',
-        description: 'Course offering deleted successfully.',
-      });
+      setOfferings(prev => prev.filter(o => o.id !== offeringToDelete.id));
+      toast({ title: 'Success', description: 'Course offering deleted successfully.' });
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete course offering.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: 'Failed to delete course offering.', variant: 'destructive' });
     } finally {
       setDeleting(false);
       setDeleteModalOpen(false);
@@ -102,39 +89,24 @@ const CourseOfferingsListing: React.FC = () => {
             <p className="text-muted-foreground mt-1">Get started by adding a new course offering.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {offerings.map((offering) => (
-              <Card
-                key={offering.id}
-                className="relative group hover:shadow-md transition-shadow duration-200 border-border"
-              >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4">
+            {offerings.map(offering => (
+              <Card key={offering.id} className="relative group hover:shadow-md transition-shadow duration-200 border-border">
                 <CardContent className="p-5">
                   {/* Three-dots Menu */}
                   <div className="absolute top-3 right-3">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
+                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-popover z-50">
-                        <DropdownMenuItem
-                          onClick={() => handleEditClick(offering)}
-                          className="cursor-pointer"
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
+                        <DropdownMenuItem onClick={() => handleEditClick(offering)} className="cursor-pointer">
+                          <Edit className="h-4 w-4 mr-2" /> Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteClick(offering)}
-                          className="cursor-pointer text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
+                        <DropdownMenuItem onClick={() => handleDeleteClick(offering)} className="cursor-pointer text-destructive focus:text-destructive">
+                          <Trash2 className="h-4 w-4 mr-2" /> Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -146,18 +118,16 @@ const CourseOfferingsListing: React.FC = () => {
                       <BookOpen className="h-5 w-5 text-primary" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-foreground truncate">
-                        {offering.course_code}
-                      </h3>
+                      <h3 className="font-semibold text-foreground truncate">{offering.course_title}</h3>
                       <p className="text-sm text-muted-foreground truncate">
-                        {offering.course_title}
+                        {offering.year_of_study} year | {offering.semester} sem
                       </p>
                       <div className="flex flex-wrap gap-1 mt-2">
                         <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
-                          {offering.program}
+                          {offering.department_shortname}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
-                          {offering.department}
+                          {offering.regulation}
                         </Badge>
                       </div>
                     </div>
@@ -169,11 +139,7 @@ const CourseOfferingsListing: React.FC = () => {
         )}
 
         {/* Floating Add Button */}
-        <Button
-          onClick={handleAddClick}
-          size="lg"
-          className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow"
-        >
+        <Button onClick={handleAddClick} size="lg" className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow">
           <Plus className="h-6 w-6" />
         </Button>
 
@@ -182,7 +148,7 @@ const CourseOfferingsListing: React.FC = () => {
           open={deleteModalOpen}
           onOpenChange={setDeleteModalOpen}
           title="Delete Course Offering"
-          description={`Are you sure you want to delete "${offeringToDelete?.course_code} - ${offeringToDelete?.course_title}"? This action cannot be undone.`}
+          description={`Are you sure you want to delete "${offeringToDelete?.course_title}"? This action cannot be undone.`}
           confirmText={deleting ? 'Deleting...' : 'Delete'}
           cancelText="Cancel"
           onConfirm={confirmDelete}

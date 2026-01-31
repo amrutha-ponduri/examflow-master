@@ -101,7 +101,7 @@ const DepartmentsListing: React.FC = () => {
             <p className="text-muted-foreground mt-1">Get started by adding a new department.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4">
             {departments.map((department) => (
               <Card
                 key={department.id}

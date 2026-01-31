@@ -7,8 +7,17 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080,
+    port: 3000,
   },
+  // proxy: {
+    //   "/courses": "http://localhost:8080",
+    //   "/users": "http://localhost:8080",
+    //   "/departments": "http://localhost:8080",
+    //   "/programs": "http://localhost:8080",
+    //   "/regulations": "http://localhost:8080",
+    //   "/courseofferings": "http://localhost:8080",
+    //   "/roles": "http://localhost:8080",
+    // },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {

@@ -8,6 +8,7 @@ async function fetchApi<T>(
 ): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
+    // cache: "no-store",
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -167,10 +168,11 @@ export const programsApi = {
 // ==================== COURSE OFFERINGS ====================
 export interface CourseOfferingListItem {
   id: number;
-  course_code: string;
-  course_title: string;
-  program: string;
-  department: string;
+  semester: string;
+  year_of_study: string;
+  department_shortname: string;
+  regulation: string;
+  course_title: string
 }
 
 export interface CourseOfferingDetail {
