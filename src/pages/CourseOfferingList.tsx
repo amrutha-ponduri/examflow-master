@@ -1,105 +1,162 @@
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, GraduationCap } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { MoreVertical, Plus, BookOpen, Edit, Trash2, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import MainLayout from '@/components/layout/MainLayout';
+import { courseOfferingsApi, CourseOfferingListItem } from '@/services/api';
 
-interface CourseOffering {
-    id: string;
-    academicYear: string;
-    semester: string;
-    yearOfStudy: string;
-    courseName: string;
-    programName: string;
-}
+const CourseOfferingsListing: React.FC = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [offerings, setOfferings] = useState<CourseOfferingListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [offeringToDelete, setOfferingToDelete] = useState<CourseOfferingListItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-interface Props {
-    offerings: CourseOffering[];
-    onEdit: (id: string) => void;
-    onDelete: (id: string) => void;
-}
+  useEffect(() => {
+    fetchOfferings();
+  }, []);
 
-const CourseOfferingList: React.FC<Props> = ({
-    offerings,
-    onEdit,
-    onDelete,
-}) => {
-    return (
-        <div className="min-h-screen p-6 bg-muted/30">
-            {/* Header */}
-            <div className="mb-8 flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                    <GraduationCap className="w-6 h-6" />
-                </div>
-                <h2 className="text-2xl font-semibold tracking-tight">
-                    Course Offerings
-                </h2>
-            </div>
+  const fetchOfferings = async () => {
+    try {
+      setLoading(true);
+      const data: CourseOfferingListItem[] = await courseOfferingsApi.getAll();
+      setOfferings(data);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch course offerings. Make sure your backend is running.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {offerings.map((item) => (
-                    <Card
-                        key={item.id}
-                        className="group rounded-xl border bg-background shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-                    >
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors">
-                                {item.courseName}
-                            </CardTitle>
-                            <p className="text-sm text-muted-foreground">
-                                {item.programName}
-                            </p>
-                        </CardHeader>
+  const handleAddClick = () => navigate('/course-offerings/add');
+  const handleEditClick = (offering: CourseOfferingListItem) =>
+    navigate(`/course-offerings/edit/${offering.id}`);
+  const handleDeleteClick = (offering: CourseOfferingListItem) => {
+    setOfferingToDelete(offering);
+    setDeleteModalOpen(true);
+  };
 
-                        <CardContent className="space-y-4">
-                            {/* Meta badges */}
-                            <div className="flex flex-wrap gap-2">
-                                <Badge variant="outline" className="rounded-md">
-                                    Year {item.yearOfStudy}
-                                </Badge>
-                                <Badge variant="outline" className="rounded-md">
-                                    Semester {item.semester}
-                                </Badge>
-                                <Badge variant="secondary" className="rounded-md">
-                                    {item.academicYear}
-                                </Badge>
-                            </div>
+  const confirmDelete = async () => {
+    if (!offeringToDelete) return;
+    try {
+      setDeleting(true);
+      await courseOfferingsApi.delete(offeringToDelete.id);
+      setOfferings(prev => prev.filter(o => o.id !== offeringToDelete.id));
+      toast({ title: 'Success', description: 'Course offering deleted successfully.' });
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to delete course offering.', variant: 'destructive' });
+    } finally {
+      setDeleting(false);
+      setDeleteModalOpen(false);
+      setOfferingToDelete(null);
+    }
+  };
 
-                            <div className="h-px bg-border/60" />
-
-                            {/* Actions */}
-                            <div className="flex justify-end gap-2">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => onEdit(item.id)}
-                                >
-                                    Edit
-                                </Button>
-
-                                <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    className="gap-1.5"
-                                    onClick={() => onDelete(item.id)}
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                    Delete
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Empty state */}
-            {offerings.length === 0 && (
-                <div className="mt-20 text-center text-muted-foreground">
-                    No course offerings added yet.
-                </div>
-            )}
+  return (
+    <MainLayout>
+      <div className="p-6 min-h-[calc(100vh-72px)] relative">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-foreground">Course Offerings</h1>
+          <p className="text-muted-foreground mt-1">Manage course offerings for academic terms</p>
         </div>
-    );
+
+        {/* Content */}
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : offerings.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64 text-center">
+            <BookOpen className="h-16 w-16 text-muted-foreground/50 mb-4" />
+            <h3 className="text-lg font-medium text-foreground">No course offerings found</h3>
+            <p className="text-muted-foreground mt-1">Get started by adding a new course offering.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {offerings.map(offering => (
+              <Card key={offering.id} className="relative group hover:shadow-md transition-shadow duration-200 border-border">
+                <CardContent className="p-5">
+                  {/* Three-dots Menu */}
+                  <div className="absolute top-3 right-3">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-popover z-50">
+                        <DropdownMenuItem onClick={() => handleEditClick(offering)} className="cursor-pointer">
+                          <Edit className="h-4 w-4 mr-2" /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteClick(offering)} className="cursor-pointer text-destructive focus:text-destructive">
+                          <Trash2 className="h-4 w-4 mr-2" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  {/* Offering Icon and Details */}
+                  <div className="flex items-start gap-3 pr-8">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-foreground truncate">{offering.course_title}</h3>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {offering.semester} | {offering.year_of_study}
+                      </p>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
+                          {offering.department_shortname}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {offering.regulation}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Floating Add Button */}
+        <Button onClick={handleAddClick} size="lg" className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow">
+          <Plus className="h-6 w-6" />
+        </Button>
+
+        {/* Delete Confirmation Modal */}
+        <ConfirmModal
+          open={deleteModalOpen}
+          onOpenChange={setDeleteModalOpen}
+          title="Delete Course Offering"
+          description={`Are you sure you want to delete "${offeringToDelete?.course_title}"? This action cannot be undone.`}
+          confirmText={deleting ? 'Deleting...' : 'Delete'}
+          cancelText="Cancel"
+          onConfirm={confirmDelete}
+          variant="destructive"
+        />
+      </div>
+    </MainLayout>
+  );
 };
 
-export default CourseOfferingList;
+export default CourseOfferingsListing;

@@ -102,7 +102,7 @@ const RegulationsListing: React.FC = () => {
             <p className="text-muted-foreground mt-1">Get started by adding a new regulation.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
             {regulations.map((regulation) => (
               <Card
                 key={regulation.id}

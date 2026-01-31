@@ -9,6 +9,15 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 3000,
   },
+  // proxy: {
+    //   "/courses": "http://localhost:8080",
+    //   "/users": "http://localhost:8080",
+    //   "/departments": "http://localhost:8080",
+    //   "/programs": "http://localhost:8080",
+    //   "/regulations": "http://localhost:8080",
+    //   "/courseofferings": "http://localhost:8080",
+    //   "/roles": "http://localhost:8080",
+    // },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
