@@ -87,8 +87,6 @@ interface SectionRule {
   marks: number;
 }
 
-const [configLoaded, setConfigLoaded] = useState(false);
-const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({});
 
 
 
@@ -133,6 +131,10 @@ const QuestionBankUpload = () => {
   const [courses, setCourses] = useState<CourseDropdown[]>([]);
   const [programs, setPrograms] = useState<ProgramDropdown[]>([]);
   const [regulations, setRegulations] = useState<RegulationDropdown[]>([]);
+
+  const [configLoaded, setConfigLoaded] = useState(false);
+const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({});
+
 
   const fetchConfiguration = async () => {
   try {
@@ -722,7 +724,7 @@ const QuestionBankUpload = () => {
 </Button>
 </Card>
         {/* Step 3: Question Management */}
-        {modulesConfirmed && modules.some((m) => m.categories.some((c) => c.confirmed)) && (
+       {configLoaded && (
           <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle>Step 3: Question Management</CardTitle>
