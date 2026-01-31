@@ -545,7 +545,7 @@ const QuestionBankUpload = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
               {/* Regulation */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="regulation">Regulation</Label>
                 <select
                   id="regulation"
@@ -561,7 +561,7 @@ const QuestionBankUpload = () => {
                   ))}
                 </select>
 
-              </div>
+              </div> */}
 
               {/* Department */}
               <div className="space-y-2">
