@@ -2,7 +2,7 @@ import { QuestionBank, User } from '@/types';
 
 export const mockUsers: User[] = [
   { id: '1', username: 'admin', name: 'Dr. Admin', role: 'admin' },
-  { id: '2', username: 'examcell', name: 'Exam Cell Staff', role: 'exam_cell' },
+  { id: '2', username: 'examcell', name: 'Dr. Rao', role: 'exam_cell' },
   { id: '3', username: 'faculty1', name: 'Prof. Ram', role: 'faculty' },
   { id: '4', username: 'faculty2', name: 'Dr. Lalitha', role: 'faculty' },
 ];
@@ -11,6 +11,8 @@ export const mockQuestionBanks: QuestionBank[] = [
   {
     id: '1',
     facultyId: '3',
+    reviewer: 'Dr. Rao',
+    date: '31-01-2026',
     facultyName: 'Prof. Ram',
     subject: 'Data Structures',
     status: 'pending',
@@ -46,6 +48,8 @@ export const mockQuestionBanks: QuestionBank[] = [
   {
     id: '2',
     facultyId: '4',
+    date: '31-01-2026',
+    reviewer: 'Dr. Sujitha',
     facultyName: 'Dr. Lalitha',
     subject: 'Database Management',
     status: 'accepted',
@@ -71,6 +75,8 @@ export const mockQuestionBanks: QuestionBank[] = [
   {
     id: '3',
     facultyId: '3',
+    reviewer: 'Dr. Rao',
+    date: '31-01-2026',
     facultyName: 'Prof. Ram',
     subject: 'Computer Networks',
     status: 'rejected',
@@ -96,6 +102,8 @@ export const mockQuestionBanks: QuestionBank[] = [
   {
     id: '4',
     facultyId: '4',
+    date: '31-01-2026',
+    reviewer: 'Dr. Sujitha',
     facultyName: 'Dr. Lalitha',
     subject: 'Operating Systems',
     status: 'pending',

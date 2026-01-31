@@ -13,6 +13,8 @@ export interface QuestionBank {
   id: string;
   facultyId: string;
   facultyName: string;
+  reviewer: string;
+  date: string;
   subject: string;
   status: SubmissionStatus;
   comment?: string;

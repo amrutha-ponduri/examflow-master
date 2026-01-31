@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { mockQuestionBanks } from '@/data/mockData';
 import { QuestionBank } from '@/types';
@@ -11,6 +11,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Edit, Check, X, MessageSquare, AlertCircle } from 'lucide-react';
+import data from "./data.json";
+import QuestionTable from "./QuestionTable";
+import "./QuestionPaper1.css";
 
 const QuestionBankView = () => {
   const { id } = useParams();
@@ -20,12 +23,36 @@ const QuestionBankView = () => {
   const { toast } = useToast();
 
   const [questionBank, setQuestionBank] = useState<QuestionBank | undefined>(
-    mockQuestionBanks.find((qb) => qb.id === id)
+    mockQuestionBanks.find((qb) => String(qb.id) === id)
   );
+
   const [comment, setComment] = useState(questionBank?.comment || '');
   const [commentError, setCommentError] = useState('');
   const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [paperData, setPaperData] = useState<any>(null);
+  useEffect(() => {
+    setPaperData(data);
+  }, []);
+  if (!paperData) {
+    return (
+      <MainLayout>
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Loading question paper...</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  const moduleData = paperData.questionbank?.[0];
+  const questionsData = moduleData?.questions || {};
+
+  const twoMarksQuestions = questionsData?.twomarks ?? [];
+  const tenMarksQuestions = questionsData?.tenmarks?.[0] ?? [];
+
+  const twoMarksLimit = Number(questionsData?.twomarksquestioncount ?? 0);
+  const tenMarksLimit = Number(questionsData?.tenmarksquestioncount ?? 0);
+
 
   if (!questionBank) {
     return (
@@ -103,41 +130,54 @@ const QuestionBankView = () => {
           </CardHeader>
           <CardContent>
             <div className="bg-muted/50 rounded-lg p-8 min-h-[400px] border-2 border-dashed border-border">
-              {questionBank.modules.length === 0 ? (
-                <div className="text-center text-muted-foreground py-12">
-                  <p>No questions have been added yet.</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {questionBank.modules.map((module) => (
-                    <div key={module.id} className="space-y-4">
-                      <h3 className="text-lg font-semibold text-primary border-b border-border pb-2">
-                        Module {module.moduleNumber}
-                      </h3>
-                      {module.categories.map((category) => (
-                        <div key={category.id} className="ml-4 space-y-2">
-                          <h4 className="font-medium text-foreground">
-                            Category {category.categoryNumber} ({category.marks} marks)
-                          </h4>
-                          <div className="ml-4 space-y-2">
-                            {category.questions.map((question) => (
-                              <div
-                                key={question.id}
-                                className="p-3 bg-card rounded border border-border"
-                              >
-                                <span className="text-sm font-medium text-muted-foreground">
-                                  Q{question.sno}.{' '}
-                                </span>
-                                <span>{question.content}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
+
+              <div className="space-y-6">
+                <div className="paper-container">
+
+                  <div className="college-header">
+                    <img src="/college.jpeg" alt="college" className="center-img" />
+                    <h3>{paperData?.fullform}</h3>
+                    <p><strong>Class:</strong> {paperData?.yos}</p>
+
+                  </div>
+
+                  <div className="course-box">
+                    <div>
+                      <p><strong>Class:</strong> {paperData.yos}</p>
+                      <p><strong>Course Title:</strong> {paperData.coursetitle}</p>
+                      <p><strong>Course Code:</strong> {paperData.coursecode}</p>
+                      <p><strong>Credits:</strong> {paperData.credits}</p>
+                      <p><strong>Faculty:</strong> {paperData.facultylist.join(", ")}</p>
                     </div>
-                  ))}
+
+                    <div>
+                      <p><strong>Semester:</strong> {paperData.sem}</p>
+                      <p><strong>Academic Year:</strong> {paperData.academicyear}</p>
+                      <p><strong>Regulation:</strong> {paperData.regulation}</p>
+                      <p><strong>Program/Dept:</strong> {paperData.dept}</p>
+                    </div>
+                  </div>
+
+                  <h2 className="unit-title">{paperData.modulename}</h2>
+
+                  <div className="pdf-content">
+                    <h3 className="section-title">2 MARK QUESTIONS</h3>
+                    <QuestionTable
+                      questions={twoMarksQuestions}
+                      limit={twoMarksLimit}
+                    />
+
+                    <div className="page-break" />
+
+                    <h3 className="section-title">10 MARK QUESTIONS</h3>
+                    <QuestionTable
+                      questions={tenMarksQuestions}
+                      limit={tenMarksLimit}
+                    />
+                  </div>
+
                 </div>
-              )}
+              </div>
             </div>
           </CardContent>
         </Card>

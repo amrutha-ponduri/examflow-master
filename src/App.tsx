@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
+import ExamCellDashboard from "./pages/ExamCellDashbord";
 import FacultyDashboard from "./pages/FacultyDashboard";
 import QuestionBankView from "./pages/QuestionBankView";
 import QuestionGeneration from "./pages/QuestionGeneration";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/exam_cell" element={<ExamCellDashboard />} />
             <Route path="/faculty" element={<FacultyDashboard />} />
             <Route path="/question-bank/:id" element={<QuestionBankView />} />
             <Route path="/generate" element={<QuestionGeneration />} />

@@ -36,8 +36,10 @@ const Login = () => {
     if (success) {
       if (role === 'faculty') {
         navigate('/faculty');
-      } else {
+      } else if (role === 'admin'){
         navigate('/admin');
+      } else {
+        navigate('/exam_cell')
       }
     } else {
       setError('Invalid credentials. Please try again.');

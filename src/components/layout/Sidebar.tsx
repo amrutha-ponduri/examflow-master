@@ -27,16 +27,21 @@ const Sidebar = () => {
     }
     
     // Admin and Exam Cell Faculty
+    if (user?.role == "exam_cell") {
+      return [
+        { to: '/exam_cell', icon: Home, label: 'Dashboard' },
+        { to: '/generate', icon: ClipboardList, label: 'Question Generation' },
+        { to: '/programs', icon: GraduationCap, label: 'Programs' },
+        { to: '/courses', icon: BookOpen, label: 'Courses' },
+        { to: '/users', icon: Users, label: 'Users' },
+        { to: '/departments', icon: Building2, label: 'Departments' },
+        { to: '/regulations', icon: FileText, label: 'Regulations' },
+        { to: '/course-offerings', icon: Layers, label: 'Course Offerings' },
+      ];
+    } 
     return [
-      { to: '/admin', icon: Home, label: 'Dashboard' },
-      { to: '/generate', icon: ClipboardList, label: 'Question Generation' },
-      { to: '/programs', icon: GraduationCap, label: 'Programs' },
-      { to: '/courses', icon: BookOpen, label: 'Courses' },
-      { to: '/users', icon: Users, label: 'Users' },
-      { to: '/departments', icon: Building2, label: 'Departments' },
-      { to: '/regulations', icon: FileText, label: 'Regulations' },
-      { to: '/course-offerings', icon: Layers, label: 'Course Offerings' },
-    ];
+      { to: '/admin', icon: Home, label: 'Dashboard' }
+    ]
   };
 
   const navItems = getNavItems();

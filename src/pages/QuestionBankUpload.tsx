@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { InlineMath, BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
@@ -60,6 +60,27 @@ interface Module {
   categories: Category[];
 }
 
+interface DepartmentDropdown {
+  id: string;
+  abbreviation: string;
+}
+
+interface CourseDropdown {
+  id: string;
+  course_code: string;
+  course_title: string;
+}
+
+interface ProgramDropdown {
+  id: string;
+  program_name: string;
+}
+
+interface RegulationDropdown {
+  id: string;
+  regulation: string;
+}
+
 const renderLatex = (text: string) => {
   const parts = text.split(/(\$[^$]+\$)/g);
 
@@ -90,6 +111,57 @@ const QuestionBankUpload = () => {
   // Modals
   const [deleteQuestionId, setDeleteQuestionId] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
+
+  const [department, setDepartment] = useState<string>("");
+const [program, setProgram] = useState<string>("");
+const [regulation, setRegulation] = useState<string>("");
+
+
+  const [departments, setDepartments] = useState<DepartmentDropdown[]>([]);
+  const [courses, setCourses] = useState<CourseDropdown[]>([]);
+  const [programs, setPrograms] = useState<ProgramDropdown[]>([]);
+  const [regulations, setRegulations] = useState<RegulationDropdown[]>([]);
+
+
+  useEffect(() => {
+    const fetchDropdowns = async () => {
+      try {
+        const baseUrl = "http://localhost:8080";
+
+        const [
+          deptRes,
+          courseRes,
+          programRes,
+          regulationRes,
+        ] = await Promise.all([
+          fetch(`${baseUrl}/departments/dropdown`),
+          fetch(`${baseUrl}/courses/dropdown`),
+          fetch(`${baseUrl}/programs/dropdown`),
+          fetch(`${baseUrl}/regulations/dropdown`),
+        ]);
+
+        if (!deptRes.ok || !courseRes.ok || !programRes.ok || !regulationRes.ok) {
+          throw new Error("Failed to fetch dropdown data");
+        }
+
+        setDepartments(await deptRes.json());
+        setCourses(await courseRes.json());
+        setPrograms(await programRes.json());
+        setRegulations(await regulationRes.json());
+      } catch (error) {
+        console.error(error);
+        toast({
+          title: "Error",
+          description: "Failed to load dropdown data",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchDropdowns();
+  }, []);
+
+
 
   // Step 1: Confirm Modules
   const handleConfirmModules = () => {
@@ -460,6 +532,78 @@ const QuestionBankUpload = () => {
         </div>
 
         {/* Step 1: Module Setup */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Select Program, Department, Regulation</CardTitle>
+            <CardDescription>
+              Choose the academic structure for the question bank
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+              {/* Regulation */}
+              <div className="space-y-2">
+                <Label htmlFor="regulation">Regulation</Label>
+                <select
+                  id="regulation"
+                  value={regulation}
+                  onChange={(e) => setRegulation(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">Select Regulation</option>
+                  {regulations.map((reg) => (
+                    <option key={reg.id} value={reg.id}>
+                      {reg.regulation}
+                    </option>
+                  ))}
+                </select>
+
+              </div>
+
+              {/* Department */}
+              <div className="space-y-2">
+                <Label htmlFor="department">Department</Label>
+                <select
+                  id="department"
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">Select Department</option>
+                  {departments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.abbreviation}
+                    </option>
+                  ))}
+                </select>
+
+              </div>
+
+              {/* Program */}
+              <div className="space-y-2">
+                <Label htmlFor="program">Program</Label>
+                <select
+                  id="program"
+                  value={program}
+                  onChange={(e) => setProgram(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">Select Program</option>
+                  {programs.map((prog) => (
+                    <option key={prog.id} value={prog.id}>
+                      {prog.program_name}
+                    </option>
+                  ))}
+                </select>
+
+              </div>
+
+            </div>
+          </CardContent>
+
+        </Card>
         <Card>
           <CardHeader>
             <CardTitle>Step 1: Module Setup</CardTitle>
