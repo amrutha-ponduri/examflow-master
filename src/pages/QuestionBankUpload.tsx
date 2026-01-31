@@ -174,7 +174,7 @@ const QuestionBankUpload = () => {
       console.log("Config response:", data);
 
       // ✅ SAFETY CHECK
-      if (!data.module_info || !data.section_rules) {
+      if (!data.modules_info || !data.sections_rules) {
         throw new Error("Invalid configuration response");
       }
 
