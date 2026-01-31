@@ -116,6 +116,9 @@ const QuestionBankUpload = () => {
 
   // Step 3: Question Management
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [questionBankId, setQuestionBankId] = useState<string | null>(null);
+  const [savingConfig, setSavingConfig] = useState(false);
+
 
   // Modals
   const [deleteQuestionId, setDeleteQuestionId] = useState<string | null>(null);
@@ -140,79 +143,129 @@ const QuestionBankUpload = () => {
   const [saveErrors, setSaveErrors] = useState<Record<string, string>>({});
 
 
-  const fetchConfiguration = async () => {
-  try {
+  const saveQuestionBankConfig = async () => {
     if (!department || !course || !program || !regulation) {
       toast({
         title: "Missing fields",
-        description: "Please select Regulation, Department, Course and Program",
+        description: "Please select all details before saving",
         variant: "destructive",
       });
       return;
     }
-    const res = await fetch(
-      "http://localhost:8080/questionbanks/configuration_details",
-      {
+
+    try {
+      setSavingConfig(true);
+
+      const res = await fetch("http://localhost:8080/questionbanks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          department_id: department,
-          course_id: course,
-          program_id: program,
-          regulation_id: regulation,
+          department_id: Number(department),
+          course_id: Number(course),
+          program_id: Number(program),
+          regulation_id: Number(regulation),
         }),
+      });
+
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "Failed to create question bank");
       }
-    );
-    
-    const data = await res.json();
-    console.log(data);
 
-    // 🔹 Build modules from backend
-    const backendModules: Module[] = data.modules_info.map((m: any) => ({
-      id: `module-${m.module_no}`,
-      moduleNumber: m.module_no,
-      categories: data.sections_rules.map((sec: any, idx: number) => ({
-        id: `module-${m.module_no}-cat-${idx + 1}`,
-        categoryNumber: idx + 1,
-        marks: sec.marks,
-        numberOfQuestions: sec.min_questions_count,
-        confirmed: true,
-        questions: Array.from(
-          { length: sec.min_questions_count },
-          (_, i) => ({
-            id: `m${m.module_no}-c${idx + 1}-q${i + 1}`,
-            sno: i + 1,
-            blocks: [
-              {
-                id: crypto.randomUUID(),
-                content: "",
-                imageUrls: [],
-              },
-            ],
-          })
-        ),
-      })),
-    }));
+      const data = await res.json();
 
-    setModules(backendModules);
+      setQuestionBankId(String(data.id));
 
-    // 🔹 Save min rules for validation
-    const minMap: Record<string, number> = {};
-    data.sections_rules.forEach((sec: any, idx: number) => {
-      minMap[`cat-${idx + 1}`] = sec.min_questions_count;
-    });
-    setMinQuestionsMap(minMap);
+      toast({
+        title: "Configuration saved",
+        description: `Question bank created (Course: ${data.course_code})`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.message || "Failed to save question bank",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingConfig(false);
+    }
+  };
 
-    setModulesConfirmed(true);
-    setConfigLoaded(true);
-  } catch (err) {
-    toast({
-      title: "Configuration error",
-      description: "Failed to load question bank configuration",
-      variant: "destructive",
-    });
-  }
-};
+
+
+  const fetchConfiguration = async () => {
+    try {
+      if (!department || !course || !program || !regulation) {
+        toast({
+          title: "Missing fields",
+          description: "Please select Regulation, Department, Course and Program",
+          variant: "destructive",
+        });
+        return;
+      }
+      const res = await fetch(
+        "http://localhost:8080/questionbanks/configuration_details",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            department_id: department,
+            course_id: course,
+            program_id: program,
+            regulation_id: regulation,
+          }),
+        }
+      );
+
+      const data = await res.json();
+      console.log(data);
+
+      // 🔹 Build modules from backend
+      const backendModules: Module[] = data.modules_info.map((m: any) => ({
+        id: `module-${m.module_no}`,
+        moduleNumber: m.module_no,
+        categories: data.sections_rules.map((sec: any, idx: number) => ({
+          id: `module-${m.module_no}-cat-${idx + 1}`,
+          categoryNumber: idx + 1,
+          marks: sec.marks,
+          numberOfQuestions: sec.min_questions_count,
+          confirmed: true,
+          questions: Array.from(
+            { length: sec.min_questions_count },
+            (_, i) => ({
+              id: `m${m.module_no}-c${idx + 1}-q${i + 1}`,
+              sno: i + 1,
+              blocks: [
+                {
+                  id: crypto.randomUUID(),
+                  content: "",
+                  imageUrls: [],
+                },
+              ],
+            })
+          ),
+        })),
+      }));
+
+      setModules(backendModules);
+
+      // 🔹 Save min rules for validation
+      const minMap: Record<string, number> = {};
+      data.sections_rules.forEach((sec: any, idx: number) => {
+        minMap[`cat-${idx + 1}`] = sec.min_questions_count;
+      });
+      setMinQuestionsMap(minMap);
+
+      setModulesConfirmed(true);
+      setConfigLoaded(true);
+    } catch (err) {
+      toast({
+        title: "Configuration error",
+        description: "Failed to load question bank configuration",
+        variant: "destructive",
+      });
+    }
+  };
 
 
   useEffect(() => {
@@ -637,7 +690,7 @@ const QuestionBankUpload = () => {
         marks: String(cat.marks || ''),
         sno: String(question.sno || ''),
         module_info: { id: mod.moduleNumber },
-        questionbank: { id: '' },
+        questionbank: { id: questionBankId },
         subquestions,
       };
 
@@ -747,7 +800,7 @@ const QuestionBankUpload = () => {
     } finally {
       setSavingQuestions((prev) => ({ ...prev, [questionId]: false }));
     }
-  }; 
+  };
 
 
 
@@ -783,34 +836,50 @@ const QuestionBankUpload = () => {
         {/* Step 1: Module Setup */}
         <Card>
           <CardHeader>
-            <CardTitle>Select Program, Department, Regulation</CardTitle>
-            <CardDescription>
-              Choose the academic structure for the question bank
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Select Program, Department, Regulation</CardTitle>
+                <CardDescription>
+                  Choose the academic structure for the question bank
+                </CardDescription>
+              </div>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                disabled={
+                  !department || !course || !program || !regulation || savingConfig
+                }
+                onClick={saveQuestionBankConfig}
+              >
+                <Check className="h-5 w-5 text-green-600" />
+              </Button>
+            </div>
           </CardHeader>
+
 
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
               {/* Regulation */}
               <div className="space-y-2">
-              <div className="space-y-2">
-                <Label htmlFor="regulation">Regulation</Label>
-                <select
-                  id="regulation"
-                  value={regulation}
-                  onChange={(e) => setRegulation(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option value="">Select Regulation</option>
-                  {regulations.map((reg) => (
-                    <option key={reg.id} value={reg.id}>
-                      {reg.regulation}
-                    </option>
-                  ))}
-                </select>
+                <div className="space-y-2">
+                  <Label htmlFor="regulation">Regulation</Label>
+                  <select
+                    id="regulation"
+                    value={regulation}
+                    onChange={(e) => setRegulation(e.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">Select Regulation</option>
+                    {regulations.map((reg) => (
+                      <option key={reg.id} value={reg.id}>
+                        {reg.regulation}
+                      </option>
+                    ))}
+                  </select>
 
-              </div>
+                </div>
               </div>
 
               {/* Department */}
@@ -934,7 +1003,7 @@ const QuestionBankUpload = () => {
                         <TableHead className="w-16 text-center">Save</TableHead>
                         <TableHead className="w-16 text-center">Delete</TableHead>
                         <TableHead className="w-16 text-center">Add</TableHead>
-                      </TableRow> 
+                      </TableRow>
                     </TableHeader>
                     <TableBody>
                       {selectedCategory.questions.map((question) => (
