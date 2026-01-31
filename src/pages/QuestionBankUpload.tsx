@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { InlineMath, BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
@@ -134,6 +134,10 @@ const QuestionBankUpload = () => {
 
   const [configLoaded, setConfigLoaded] = useState(false);
   const [minQuestionsMap, setMinQuestionsMap] = useState<Record<string, number>>({});
+
+  // Per-question save status and errors (used by the tick button)
+  const [savingQuestions, setSavingQuestions] = useState<Record<string, boolean>>({});
+  const [saveErrors, setSaveErrors] = useState<Record<string, string>>({});
 
 
   const fetchConfiguration = async () => {
@@ -615,6 +619,146 @@ const QuestionBankUpload = () => {
     );
   };
 
+  // Helper to determine whether an id is a persisted backend id (numeric id)
+  const isPersistedId = (id: string) => /^\d+$/.test(id);
+
+  // Save or update a single question (called by tick button). Works per-question only.
+  const saveQuestion = async (questionId: string) => {
+    const mod = getSelectedModuleForCategory();
+    const cat = getSelectedCategory();
+    if (!mod || !cat) return;
+
+    const question = cat.questions.find((q) => q.id === questionId);
+    if (!question) return;
+
+    setSavingQuestions((prev) => ({ ...prev, [questionId]: true }));
+    setSaveErrors((prev) => ({ ...prev, [questionId]: '' }));
+
+    try {
+      // Map blocks -> subquestions payload
+      const subquestions = question.blocks.map((b) => ({
+        content: b.content,
+        image_urls: b.imageUrls || [],
+        marks: String(cat.marks || ''),
+        blooms_level: '',
+      }));
+
+      const payload = {
+        marks: String(cat.marks || ''),
+        sno: String(question.sno || ''),
+        module_info: { id: mod.moduleNumber },
+        questionbank: { id: '' },
+        subquestions,
+      };
+
+      const BASE = 'http://localhost:8080';
+
+      if (!isPersistedId(question.id)) {
+        // Create (POST)
+        const res = await fetch(`${BASE}/questions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(txt || `Create failed (${res.status})`);
+        }
+
+        const data = await res.json();
+
+        // Update local state with returned id and subquestions
+        setModules((prev) =>
+          prev.map((m) =>
+            m.id === mod.id
+              ? {
+                ...m,
+                categories: m.categories.map((c) =>
+                  c.id === cat.id
+                    ? {
+                      ...c,
+                      questions: c.questions.map((q) =>
+                        q.id === questionId
+                          ? {
+                            ...q,
+                            id: String(data.id),
+                            sno: data.sno || q.sno,
+                            blocks: (data.subquestions || []).map((sq: any) => ({
+                              id: `sq-${sq.id}`,
+                              content: sq.content || '',
+                              imageUrls: sq.image_urls || [],
+                            })),
+                          }
+                          : q
+                      ),
+                    }
+                    : c
+                ),
+              }
+              : m
+          )
+        );
+
+        toast({ title: 'Question created', description: `Question ${question.sno} created successfully.`, });
+      } else {
+        // Update (PUT)
+        const res = await fetch(`${BASE}/questions/${question.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(txt || `Update failed (${res.status})`);
+        }
+
+        const data = await res.json();
+
+        // Replace local data with server response
+        setModules((prev) =>
+          prev.map((m) =>
+            m.id === mod.id
+              ? {
+                ...m,
+                categories: m.categories.map((c) =>
+                  c.id === cat.id
+                    ? {
+                      ...c,
+                      questions: c.questions.map((q) =>
+                        q.id === questionId || q.id === String(data.id)
+                          ? {
+                            ...q,
+                            id: String(data.id),
+                            sno: data.sno || q.sno,
+                            blocks: (data.subquestions || []).map((sq: any) => ({
+                              id: `sq-${sq.id}`,
+                              content: sq.content || '',
+                              imageUrls: sq.image_urls || [],
+                            })),
+                          }
+                          : q
+                      ),
+                    }
+                    : c
+                ),
+              }
+              : m
+          )
+        );
+
+        toast({ title: 'Question updated', description: `Question ${question.sno} updated successfully.`, });
+      }
+    } catch (err: any) {
+      console.error('Save question failed:', err);
+      setSaveErrors((prev) => ({ ...prev, [questionId]: err?.message || 'Save failed' }));
+      toast({ title: 'Error', description: err?.message || 'Failed to save question', variant: 'destructive' });
+    } finally {
+      setSavingQuestions((prev) => ({ ...prev, [questionId]: false }));
+    }
+  }; 
+
 
 
 
@@ -795,121 +939,148 @@ const QuestionBankUpload = () => {
                       <TableRow className="bg-muted/50">
                         <TableHead className="w-16">SNO</TableHead>
                         <TableHead>Question Content</TableHead>
+                        <TableHead className="w-16 text-center">Save</TableHead>
                         <TableHead className="w-16 text-center">Delete</TableHead>
                         <TableHead className="w-16 text-center">Add</TableHead>
-                      </TableRow>
+                      </TableRow> 
                     </TableHeader>
                     <TableBody>
                       {selectedCategory.questions.map((question) => (
-                        <TableRow key={question.id}>
-                          <TableCell className="font-medium">{question.sno}</TableCell>
-                          <TableCell>
-                            <div className="space-y-4">
+                        <Fragment key={question.id}>
+                          <TableRow>
+                            <TableCell className="font-medium">{question.sno}</TableCell>
+                            <TableCell>
+                              <div className="space-y-4">
 
-                              {question.blocks.map((block) => (
-                                <div
-                                  key={block.id}
-                                  className="p-3 border rounded-md space-y-2"
-                                >
-                                  {/* Textarea */}
-                                  <Textarea
-                                    placeholder="Enter content (LaTeX supported)"
-                                    value={block.content}
-                                    onChange={(e) =>
-                                      updateBlockContent(question.id, block.id, e.target.value)
-                                    }
-                                    rows={3}
-                                  />
+                                {question.blocks.map((block) => (
+                                  <div
+                                    key={block.id}
+                                    className="p-3 border rounded-md space-y-2"
+                                  >
+                                    {/* Textarea */}
+                                    <Textarea
+                                      placeholder="Enter content (LaTeX supported)"
+                                      value={block.content}
+                                      onChange={(e) =>
+                                        updateBlockContent(question.id, block.id, e.target.value)
+                                      }
+                                      rows={3}
+                                    />
 
-                                  {/* LaTeX Preview */}
-                                  {block.content && (
-                                    <div className="p-2 bg-muted rounded-md text-sm">
-                                      <span className="text-xs text-muted-foreground block mb-1">
-                                        Preview:
-                                      </span>
-                                      {renderLatex(block.content)}
-                                    </div>
-                                  )}
+                                    {/* LaTeX Preview */}
+                                    {block.content && (
+                                      <div className="p-2 bg-muted rounded-md text-sm">
+                                        <span className="text-xs text-muted-foreground block mb-1">
+                                          Preview:
+                                        </span>
+                                        {renderLatex(block.content)}
+                                      </div>
+                                    )}
 
-                                  {/* Images BELOW preview */}
-                                  {block.imageUrls.length > 0 && (
-                                    <div className="flex gap-2 flex-wrap pt-2">
-                                      {block.imageUrls.map((url, index) => (
-                                        <div
-                                          key={index}
-                                          className="relative w-28 h-20 border rounded-md overflow-hidden"
-                                        >
-                                          <img
-                                            src={url}
-                                            alt="uploaded"
-                                            className="w-full h-full object-cover"
-                                          />
-
-                                          {/* ❌ Delete */}
-                                          <button
-                                            type="button"
-                                            onClick={() =>
-                                              removeBlockImage(question.id, block.id, index)
-                                            }
-                                            className="absolute -top-2 -right-2 bg-red-600 text-white w-5 h-5 rounded-full text-xs flex items-center justify-center hover:bg-red-700"
+                                    {/* Images BELOW preview */}
+                                    {block.imageUrls.length > 0 && (
+                                      <div className="flex gap-2 flex-wrap pt-2">
+                                        {block.imageUrls.map((url, index) => (
+                                          <div
+                                            key={index}
+                                            className="relative w-28 h-20 border rounded-md overflow-hidden"
                                           >
-                                            ✕
-                                          </button>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                  {/* Upload image */}
-                                  <Input
-                                    type="file"
-                                    accept="image/*"
-                                    multiple
-                                    onChange={(e) => {
-                                      const files = e.target.files;
-                                      if (!files) return;
+                                            <img
+                                              src={url}
+                                              alt="uploaded"
+                                              className="w-full h-full object-cover"
+                                            />
 
-                                      Array.from(files).forEach(file =>
-                                        uploadBlockImage(question.id, block.id, file)
-                                      );
+                                            {/* ❌ Delete */}
+                                            <button
+                                              type="button"
+                                              onClick={() =>
+                                                removeBlockImage(question.id, block.id, index)
+                                              }
+                                              className="absolute -top-2 -right-2 bg-red-600 text-white w-5 h-5 rounded-full text-xs flex items-center justify-center hover:bg-red-700"
+                                            >
+                                              ✕
+                                            </button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                    {/* Upload image */}
+                                    <Input
+                                      type="file"
+                                      accept="image/*"
+                                      multiple
+                                      onChange={(e) => {
+                                        const files = e.target.files;
+                                        if (!files) return;
 
-                                      e.target.value = "";
-                                    }}
-                                  />
+                                        Array.from(files).forEach(file =>
+                                          uploadBlockImage(question.id, block.id, file)
+                                        );
 
-                                </div>
-                              ))}
+                                        e.target.value = "";
+                                      }}
+                                    />
 
-                              {/* Add new textarea block */}
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => addBlock(question.id)}
-                              >
-                                + Add sub question
-                              </Button>
+                                  </div>
+                                ))}
 
-                            </div>
-                          </TableCell>
-
-
-
-
-                          <TableCell className="text-center">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
+                                {/* Add new textarea block */}
                                 <Button
-                                  variant="ghost"
+                                  variant="outline"
                                   size="sm"
-                                  className="text-destructive hover:text-destructive"
-                                  onClick={() => setDeleteQuestionId(question.id)}
+                                  onClick={() => addBlock(question.id)}
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  + Add sub question
                                 </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Delete this question</TooltipContent>
-                            </Tooltip>
-                          </TableCell>
-                        </TableRow>
+
+                              </div>
+                            </TableCell>
+
+
+
+
+                            <TableCell className="text-center">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    disabled={!!savingQuestions[question.id]}
+                                    onClick={() => saveQuestion(question.id)}
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>{savingQuestions[question.id] ? 'Saving...' : 'Save this question'}</TooltipContent>
+                              </Tooltip>
+                            </TableCell>
+
+                            <TableCell className="text-center">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-destructive hover:text-destructive"
+                                    onClick={() => setDeleteQuestionId(question.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Delete this question</TooltipContent>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+
+                          {saveErrors[question.id] && (
+                            <TableRow>
+                              <TableCell colSpan={5} className="text-sm text-destructive px-4 py-2">
+                                {saveErrors[question.id]}
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </Fragment>
                       ))}
                     </TableBody>
                   </Table>
