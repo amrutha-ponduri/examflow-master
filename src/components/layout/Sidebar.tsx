@@ -6,7 +6,11 @@ import {
   Upload, 
   Settings,
   ClipboardList,
-  GraduationCap
+  GraduationCap,
+  BookOpen,
+  Users,
+  Building2,
+  Layers
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -27,6 +31,11 @@ const Sidebar = () => {
       { to: '/admin', icon: Home, label: 'Dashboard' },
       { to: '/generate', icon: ClipboardList, label: 'Question Generation' },
       { to: '/programs', icon: GraduationCap, label: 'Programs' },
+      { to: '/courses', icon: BookOpen, label: 'Courses' },
+      { to: '/users', icon: Users, label: 'Users' },
+      { to: '/departments', icon: Building2, label: 'Departments' },
+      { to: '/regulations', icon: FileText, label: 'Regulations' },
+      { to: '/course-offerings', icon: Layers, label: 'Course Offerings' },
     ];
   };
 
